@@ -27,5 +27,15 @@ In rules.txt:
 Result:
 fir.lastname
 
+If you come across a username policy that uses either a bracket or a brace, you can escape it using a backslash. Keep in mind though that you don't need to escape the ending bracket or brace as these are not used in the index process. In this current version, there is no way to escape a backslash if it is used before a bracket. An example of escaping these characters is shown below.
+
+In rules.txt:
+\[]\{}\[\{
+\[]\{[0]}\[{0}]\[\{
+
+Result:
+[]{}[{
+[]{firstname}[lastname][{
+
 Thank you for using Divide and Conquer!
 

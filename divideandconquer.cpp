@@ -37,6 +37,13 @@ public:
     int firstsize;
     int lastsize;
 
+    rule() {
+        firstindex = 0;
+        lastindex = 0;
+        firstsize = 0;
+        lastsize = 0;
+    }
+
     void printdata() {
 
         cout << "User Rule: " << userrule << "\n";
@@ -49,23 +56,36 @@ public:
 
     void apply(user username, string filename) {
 
-        string temp;
+        string firsttemp, lasttemp;
         string temprule = userrule;
+        int tempfirstsize = 0;
+        int templastsize = 0;
         fstream outfile;
         outfile.open(filename, fstream::app);
 
         if (firstsize == 0) {
-            temp = username.firstname;
+            firsttemp = username.firstname;
         } else {
-            temp = username.firstname.substr(0, firstsize);
-        } temprule.replace(temprule.find('['), to_string(firstsize).length() + 2, temp);
+            firsttemp = username.firstname.substr(0, firstsize);
+        }
 
         if (lastsize == 0) {
-            temp = username.lastname;
+            lasttemp = username.lastname;
         } else {
-            temp = username.lastname.substr(0, lastsize);
-        } temprule.replace(temprule.find('{'), to_string(lastsize).length() + 2, temp);
+            lasttemp = username.lastname.substr(0, lastsize);
+        } 
 
+        if (firstindex < lastindex) {
+            tempfirstsize = firsttemp.size() - 1;
+            temprule.replace(firstindex + templastsize, to_string(firstsize).length() + 2, firsttemp);
+            temprule.replace(lastindex + tempfirstsize, to_string(lastsize).length() + 2, lasttemp);
+        } else if (firstindex > lastindex) {
+            templastsize = lasttemp.size() - 1;
+            temprule.replace(lastindex + tempfirstsize, to_string(lastsize).length() + 2, lasttemp);
+            temprule.replace(firstindex + templastsize, to_string(firstsize).length() + 2, firsttemp);
+        }
+        
+        cout << "Generated username: " << temprule << "\n";
         outfile << temprule << "\n";
         outfile.close();
     }
@@ -94,14 +114,46 @@ vector <rule> loadrules(vector <rule> *rules, string rulefile) {
     infile.open(rulefile);
     while (getline(infile, temprule.userrule)) {
 
+        
         temprule.firstindex = temprule.userrule.find('[');
+        while ((temprule.firstindex != 0) && (temprule.userrule.at(temprule.firstindex - 1) == '\\')) {
+            temprule.firstindex++;
+            temprule.firstindex = temprule.userrule.find('[', temprule.firstindex);
+        }
+
+        temprule.lastindex = temprule.userrule.find('{');
+        while ((temprule.lastindex != 0) && (temprule.userrule.at(temprule.lastindex - 1) == '\\')) {
+            temprule.lastindex++;
+            temprule.lastindex = temprule.userrule.find('{', temprule.lastindex);
+        }
+
         temp = temprule.userrule.substr(temprule.firstindex + 1, temprule.userrule.find(']') - (temprule.firstindex + 1));
         temprule.firstsize = stoi(temp);
 
-        temprule.lastindex = temprule.userrule.find('{');
         temp = temprule.userrule.substr(temprule.lastindex + 1, temprule.userrule.find('}') - (temprule.lastindex + 1));
         temprule.lastsize = stoi(temp);
 
+        for (int i = 0; i < temprule.userrule.length(); i++) {
+            if (temprule.userrule.at(i) == '\\') {
+
+                if ((i < temprule.firstindex) && (i < temprule.lastindex)) {
+                    temprule.userrule.erase(i, 1);
+                    temprule.firstindex--;
+                    temprule.lastindex--;
+                } else if (i < temprule.firstindex) {
+                    temprule.userrule.erase(i, 1);
+                    temprule.firstindex--;
+                } else if (i < temprule.lastindex) {
+                    temprule.userrule.erase(i, 1);
+                    temprule.lastindex--;
+                } else {
+                    temprule.userrule.erase(i, 1);
+                }
+
+            }
+
+        }
+        cout << "User rule: " << temprule.userrule << "\n";
         if (temprule.firstindex < temprule.lastindex) {
             temprule.lastindex -= 2;
         } else if (temprule.firstindex > temprule.lastindex) {
@@ -117,11 +169,10 @@ vector <rule> loadrules(vector <rule> *rules, string rulefile) {
 
 int main(int argc, char **argv) {
 
-    
-    
     po::options_description description("Allowed arguments");
     description.add_options() 
-    ("help", "Prints the help message.") ("user", po::value<string>(), "Specifies the file containing names. (Required)")
+    ("help", "Prints the help message.") 
+    ("user", po::value<string>(), "Specifies the file containing names. (Required)")
     ("wordlist", po::value<string>()->default_value("wordlist.txt"), "Specifies the output file that contains the wordlist. If an existing file is specified, the wordlist will be appended. (Default is wordlist.txt)") 
     ("rule", po::value<string>()->default_value("rules.txt"), "Specify the rule file to use. (Default is rules.txt)");
 
