@@ -153,7 +153,7 @@ vector <rule> loadrules(vector <rule> *rules, string rulefile) {
             }
 
         }
-        cout << "User rule: " << temprule.userrule << "\n";
+        cout << "Loaded rule: " << temprule.userrule << "\n";
         if (temprule.firstindex < temprule.lastindex) {
             temprule.lastindex -= 2;
         } else if (temprule.firstindex > temprule.lastindex) {
@@ -167,6 +167,79 @@ vector <rule> loadrules(vector <rule> *rules, string rulefile) {
     return *rules;
 }
 
+string createrule(string examplerule) {
+
+    
+    string finalrule;
+    string firstexample = "firstname";
+    string lastexample = "lastname";
+    int firstdiff, lastdiff, tempplace = 0;
+
+    while (tempplace + 1 < examplerule.length()) {
+
+        for (int i = 0; i < firstexample.length(); i++) {
+            if (examplerule.length() <= (tempplace + i + 1)) {
+                tempplace = examplerule.length() - 1;
+                firstdiff = i + 1;
+                break;
+            } else if (firstexample.at(i) != examplerule.at(i + tempplace)) {
+                firstdiff = i;
+                tempplace += firstdiff;
+                break;
+            } else if (i + 1 == firstexample.length()) {
+                firstdiff = i + 1;
+                tempplace += firstdiff;
+                break;
+            }
+        }
+
+        if (firstdiff != 0) {
+            if (firstdiff == firstexample.length()) {
+                finalrule.append("[0]");
+                continue;
+            } else {
+                finalrule.append('[' + to_string(firstdiff) + ']');
+                continue;
+            }
+        }
+
+        for (int i = 0; i < lastexample.length(); i++) {
+            if (examplerule.length() <= (tempplace + i + 1)) {
+                tempplace = examplerule.length() - 1;
+                lastdiff = i + 1;
+                break;
+            } else if (lastexample.at(i) != examplerule.at(i + tempplace)) {
+                lastdiff = i;
+                tempplace += lastdiff;
+                break;
+            } else if (i + 1 == lastexample.length()) {
+                lastdiff = i + 1;
+                tempplace += lastdiff;
+                break;
+            }
+        }
+
+        if ((lastdiff != 0) && (lastdiff != firstdiff)) {
+            if (lastdiff == lastexample.length()) {
+                finalrule.append("{0}");
+                continue;
+            } else {
+                finalrule.append('{' + to_string(lastdiff) + '}');
+                continue;
+            }
+        }
+        
+        if ((lastdiff == 0) && (firstdiff == 0) && (firstdiff + 1 != firstexample.length())) {
+            finalrule.append(examplerule, tempplace, 1);
+            tempplace++;
+        }
+        
+    }
+    finalrule.append("\n");
+    cout << "Created and exported rule: " << finalrule << "\n";
+    return finalrule;
+}
+ 
 int main(int argc, char **argv) {
 
     po::options_description description("Allowed arguments");
@@ -174,6 +247,7 @@ int main(int argc, char **argv) {
     ("help", "Prints the help message.") 
     ("user", po::value<string>(), "Specifies the file containing names. (Required)")
     ("wordlist", po::value<string>()->default_value("wordlist.txt"), "Specifies the output file that contains the wordlist. If an existing file is specified, the wordlist will be appended. (Default is wordlist.txt)") 
+    ("template", po::value<string>(), "Enter a template of the username policy using the firstname \"firstname\" and the lastname \"lastname\". An example of this is \"fir.lastname\"")
     ("rule", po::value<string>()->default_value("rules.txt"), "Specify the rule file to use. (Default is rules.txt)");
 
     po::variables_map varmap;
@@ -191,6 +265,14 @@ int main(int argc, char **argv) {
 
     vector <rule> rules;
     vector <user> usernames;
+    
+    if (varmap.count("template")) {
+        fstream outfile;
+        outfile.open("rules.txt", fstream::app);
+        outfile << createrule(varmap["template"].as<string>());
+        outfile.close();
+    }
+    
     loadnames(&usernames, varmap["user"].as<string>());
     rules = loadrules(&rules, varmap["rule"].as<string>());
 

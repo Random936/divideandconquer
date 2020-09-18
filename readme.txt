@@ -12,7 +12,7 @@ g++ divideandconquer.cpp -o divideandconquer -l boost_program_options
 
 USING THE PROGRAM
 
-Using the program itself is fairly simple. The only arguments are user file, rule file, and wordlist output file. These are specified by '--user', '--rule', and '--wordlist' followed by the argument. Both the rule and wordlist argument are not required, as their defaults are 'rules.txt', and 'wordlist.txt'.
+Using the program itself is fairly simple. The only arguments are user file, rule file, and wordlist output file. These are specified by '--user', '--rule', and '--wordlist' followed by the argument. Both the rule and wordlist argument are not required, as their defaults are 'rules.txt', and 'wordlist.txt'. The last optional argument is '--template' which allows you to create a rule using an example first and lastname.
 
 CREATING RULE FILES
 
@@ -36,6 +36,16 @@ In rules.txt:
 Result:
 []{}[{
 []{firstname}[lastname][{
+
+USING THE TEMPLATE ARGUMENT
+
+The template argument allows you to append a rule by simply entering a username policy using the example firstname 'firstname' and lastname 'lastname'. An example of how to use this is shown below.
+
+In command line:
+divideandconquer --user user.txt --template fir.lastname
+
+In rules.txt:
+[3].{0}
 
 Thank you for using Divide and Conquer!
 
