@@ -4,7 +4,7 @@ Divide and Conquer is a program made to allow for the quick creation of a wordli
 
 REQUIREMENTS
 
-libboost-program-options1.71.0
+libboost-program-options1.71-dev
 
 INSTALL
 Run the command below to compile the program.
